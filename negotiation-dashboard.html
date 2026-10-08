@@ -1,0 +1,346 @@
+<title>Infrastructure Deal Room</title>
+<style>
+/* Layout: bento grid, 6 columns. Buyer left, seller right, shared ground in the middle band. */
+:root {
+  --bg: #e4e6ea;          /* grey ground */
+  --tile: #f4f5f7;        /* silver tile */
+  --tile-2: #eceef1;
+  --line: #c9cdd3;        /* silver rule */
+  --fg: #1d2228;
+  --muted: #5f6873;
+  --blue: #1f5fbf;        /* buyer + accent */
+  --blue-soft: #dbe6f6;
+  --steel: #5b6675;       /* seller */
+  --steel-soft: #dfe2e7;
+  --zone: rgba(31, 95, 191, .14);
+  --good: #2c7a4b;
+  --warn: #9a6a12;
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15181c; --tile: #1f2329; --tile-2: #262b32; --line: #353b44;
+    --fg: #e7e9ec; --muted: #9aa3ae; --blue: #6c9fe8; --blue-soft: #1f2d44;
+    --steel: #aab4c1; --steel-soft: #2c323a; --zone: rgba(108, 159, 232, .16);
+    --good: #6cc192; --warn: #d9a646; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15181c; --tile: #1f2329; --tile-2: #262b32; --line: #353b44;
+  --fg: #e7e9ec; --muted: #9aa3ae; --blue: #6c9fe8; --blue-soft: #1f2d44;
+  --steel: #aab4c1; --steel-soft: #2c323a; --zone: rgba(108, 159, 232, .16);
+  --good: #6cc192; --warn: #d9a646; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 14px/1.5 var(--font);
+  padding-inline: 16px; padding-block: 24px 40px;
+}
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; }
+h3 { font-size: 14px; margin: 0; }
+p { margin: 0; }
+.sub { color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--tile); color: var(--muted); white-space: nowrap; }
+.pill.warn { color: var(--warn); border-color: currentColor; }
+.pill.good { color: var(--good); border-color: currentColor; }
+.pill.buyer { color: var(--blue); border-color: currentColor; }
+.pill.seller { color: var(--steel); border-color: currentColor; }
+
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.tile { background: var(--tile); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.span-1 { grid-column: span 1; } .span-2 { grid-column: span 2; } .span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; }
+.tile.buyer { border-top: 3px solid var(--blue); }
+.tile.seller { border-top: 3px solid var(--steel); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+.stat { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat small { font-size: 14px; font-weight: 400; color: var(--muted); }
+
+dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; }
+dt { color: var(--muted); }
+dd { margin: 0; font-variant-numeric: tabular-nums; }
+ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.redlines li::marker { color: var(--warn); }
+.meter { height: 6px; background: var(--tile-2); border-radius: 3px; overflow: hidden; }
+.meter > span { display: block; height: 100%; }
+.note { background: var(--tile-2); border-radius: 8px; padding: 10px 12px; color: var(--muted); }
+.note strong { color: var(--fg); }
+
+svg { display: block; width: 100%; height: auto; }
+svg text { font-family: var(--font); font-size: 11px; fill: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+tr:last-child td { border-bottom: 0; }
+.scroll { overflow-x: auto; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { font: inherit; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--tile-2); color: var(--muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--blue); border-color: var(--blue); color: var(--tile); }
+.tabs button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.thoughts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.thought { border-radius: 8px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.thought.buyer { background: var(--blue-soft); }
+.thought.seller { background: var(--steel-soft); }
+.thought.mediator { background: var(--tile-2); }
+.move { font-weight: 700; font-variant-numeric: tabular-nums; }
+.thought blockquote { margin: 0; font-style: italic; }
+.bias { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 960px) {
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .span-1 { grid-column: span 1; } .span-2, .span-3, .span-4, .span-6 { grid-column: span 2; }
+  .thoughts { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .bento { grid-template-columns: 1fr; }
+  .span-1, .span-2, .span-3, .span-4, .span-6 { grid-column: span 1; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Infrastructure Deal Room</h1>
+      <p class="sub">12-month enterprise infrastructure contract · mid-stage SaaS buyer vs. infrastructure vendor</p>
+    </div>
+    <span class="pill warn" title="sessions/ and kg-shared/ are empty">Rounds are example data · no run recorded yet</span>
+  </header>
+
+  <section class="bento" aria-label="Deal overview">
+    <!-- Summary row -->
+    <div class="tile span-1">
+      <h2>Deal zone</h2>
+      <div class="stat">$40k–$50k</div>
+      <p class="sub">Seller floor to buyer ceiling</p>
+    </div>
+    <div class="tile span-1">
+      <h2>Both happy</h2>
+      <div class="stat">$44k–$45k</div>
+      <p class="sub">Where both "happy" ranges overlap</p>
+    </div>
+    <div class="tile span-1">
+      <h2>Close (example)</h2>
+      <div class="stat">$44.5k <small>R3</small></div>
+      <p class="sub">Net 30 · 99.5% SLA</p>
+    </div>
+    <div class="tile span-3">
+      <div class="row"><h2>Price map</h2><span class="sub">$ thousands</span></div>
+      <svg id="zopa" viewBox="0 0 560 120" role="img" aria-label="Price map: seller floor 40k, buyer target 42k, overlap 44k to 45k, seller target 46k, buyer BATNA 48k, buyer ceiling 50k"></svg>
+    </div>
+
+    <!-- Two sides -->
+    <div class="tile span-3 buyer">
+      <div class="row"><h3>Buyer · mid-stage SaaS</h3><span class="pill buyer">Deadline 15 May</span></div>
+      <dl>
+        <dt>Target</dt><dd>~$42,000</dd>
+        <dt>Happy at</dt><dd>≤ $45,000 with SLA in writing, Net 30 or better</dd>
+        <dt>Walk-away</dt><dd>&gt; $50,000</dd>
+        <dt>BATNA</dt><dd>Competitor quote at $48,000, weaker SLA</dd>
+        <dt>Payment</dt><dd>Net 30 (cash-flow constrained)</dd>
+      </dl>
+      <div>
+        <h2>Red lines</h2>
+        <ul class="redlines">
+          <li>Cannot exceed $50,000 total contract value</li>
+          <li>99.5% uptime SLA in writing</li>
+          <li>No auto-renewal clause (body allows one with a 60-day notice window)</li>
+          <li>Net 15 or worse is unacceptable</li>
+        </ul>
+      </div>
+      <div class="note"><div class="row"><strong>Bias: anchoring</strong><span>0.7</span></div>
+        <div class="meter" aria-hidden="true"><span style="width:70%;background:var(--blue)"></span></div>
+        <p>Open low to set the frame. Reset the seller's high anchor by talking about value. Budget math still wins.</p></div>
+    </div>
+
+    <div class="tile span-3 seller">
+      <div class="row"><h3>Seller · infrastructure vendor</h3><span class="pill seller">Deadline 30 Jun</span></div>
+      <dl>
+        <dt>Target</dt><dd>≥ $46,000</dd>
+        <dt>Happy at</dt><dd>≥ $44,000 with Net 30 or better and 99.5% SLA</dd>
+        <dt>Walk-away</dt><dd>&lt; $40,000</dd>
+        <dt>BATNA</dt><dd>Other prospects in the pipeline; can be patient</dd>
+        <dt>Payment</dt><dd>Net 15 or Net 30 preferred</dd>
+      </dl>
+      <div>
+        <h2>Red lines</h2>
+        <ul class="redlines">
+          <li>$40,000 floor, below which gross margin breaks</li>
+          <li>No 99.9% SLA without a price uplift for the infrastructure upgrade</li>
+          <li>Net 60 or worse breaks the cash-flow model</li>
+        </ul>
+      </div>
+      <div class="note"><div class="row"><strong>Bias: loss aversion</strong><span>0.6</span></div>
+        <div class="meter" aria-hidden="true"><span style="width:60%;background:var(--steel)"></span></div>
+        <p>Price concessions feel like losses. Prefers the buyer to move first. Holding for $46k when the math says $44k is partly this bias.</p></div>
+      <div class="note"><strong>Hidden from buyer:</strong> excess capacity this month after a customer churned, so closing sooner is mildly preferable.</div>
+    </div>
+
+    <!-- Offers + terms -->
+    <div class="tile span-3">
+      <div class="row"><h2>Offer track</h2><span class="pill warn">Example</span></div>
+      <svg id="track" viewBox="0 0 520 220" role="img" aria-label="Offer track by round: buyer 41k, 43.5k, 44.5k; seller 49k, 46.5k, accepted 44.5k"></svg>
+      <div class="row sub"><span><span style="color:var(--blue)">●</span> Buyer offers</span><span><span style="color:var(--steel)">●</span> Seller offers</span><span>Shaded band: both happy</span></div>
+    </div>
+
+    <div class="tile span-3">
+      <div class="row"><h2>Terms side by side</h2><span class="sub">Shared file: kg-shared/term-*.md</span></div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Term</th><th>Buyer wants</th><th>Seller wants</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Price</td><td>~$42k, ≤ $45k</td><td>≥ $46k, ≥ $44k OK</td><td><span class="pill good">Overlap</span></td></tr>
+            <tr><td>Payment</td><td>Net 30</td><td>Net 15 / Net 30</td><td><span class="pill good">Net 30 fits</span></td></tr>
+            <tr><td>SLA</td><td>99.5% in writing</td><td>99.5% standard</td><td><span class="pill good">Aligned</span></td></tr>
+            <tr><td>Term</td><td>12 months</td><td>Multi-year if possible</td><td><span class="pill warn">Open</span></td></tr>
+            <tr><td>Renewal</td><td>None, or 60-day notice</td><td>Not stated</td><td><span class="pill warn">Open</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Thoughts -->
+    <div class="tile span-6">
+      <div class="row">
+        <h2>Private reasoning by round</h2>
+        <div class="tabs" role="tablist" aria-label="Round">
+          <button role="tab" id="tab-1" aria-selected="false" data-r="1">Round 1</button>
+          <button role="tab" id="tab-2" aria-selected="false" data-r="2">Round 2</button>
+          <button role="tab" id="tab-3" aria-selected="true" data-r="3">Round 3</button>
+        </div>
+      </div>
+      <p class="sub">Example reasoning in the format agents write to sessions/round-N-buyer/docs/rationale.md, sessions/round-N-seller/docs/rationale.md and sessions/round-N-mediator/docs/analysis.md. Neither side sees the other's.</p>
+      <div class="thoughts" id="thoughts" role="tabpanel"></div>
+    </div>
+
+    <!-- Mediator flags -->
+    <div class="tile span-6">
+      <h2>Mediator flags from setup files</h2>
+      <ul>
+        <li>The seller's BATNA says it is capacity-limited this quarter, but its hidden context says it has excess capacity this month. The patience it claims is partly a bluff.</li>
+        <li>The buyer's red line bans auto-renewal, while its intent allows auto-renewal with a 60-day notice. Settle which one applies before the agreement is drafted.</li>
+        <li>The buyer's $48k BATNA sits below its $50k ceiling, so in practice it should walk away above $48k unless the SLA difference is worth the gap.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+const ROUNDS = {
+  1: {
+    buyer: { move: "Offer $41,000 · Net 30 · 99.5% SLA · 12 mo · no auto-renewal",
+      thought: "Opening at 41k anchors below our 42k target without reading as bad faith. Their 'patient vendor' line may be posture; infra vendors rarely sit on a signed 12-month deal.",
+      bias: "Anchoring: leaned into it on purpose" },
+    seller: { move: "Counter $49,000 · Net 15 · 99.5% SLA",
+      thought: "41k is aggressive. Real target is 46k, so 49k leaves room. Not mentioning the churned customer or the spare capacity.",
+      bias: "Loss aversion: refused to move first on price" },
+    mediator: { move: "Gap $8,000",
+      thought: "SLA is already aligned at 99.5%. The real friction is payment: Net 15 is a buyer red line. Suggest both sides settle payment before price." }
+  },
+  2: {
+    buyer: { move: "Offer $43,500 · Net 30 (firm)",
+      thought: "Conceding 2.5k signals good faith. Net 30 is not negotiable. Our competitor quote at 48k is the practical ceiling, not 50k.",
+      bias: "Anchoring: ignored their 49k frame and argued from value" },
+    seller: { move: "Counter $46,500 · accepts Net 30",
+      thought: "Net 30 costs little and buys room on price. My gut wants to hold 47k; that is partly loss aversion. The spare capacity this month makes a sooner close worth something.",
+      bias: "Loss aversion: noticed it, conceded anyway" },
+    mediator: { move: "Payment settled · gap $3,000",
+      thought: "Both happy ranges overlap at 44–45k. Nudge toward that band in the shared notes without putting exact numbers in kg-shared/." }
+  },
+  3: {
+    buyer: { move: "Offer $44,500 · Net 30 · 60-day renewal notice",
+      thought: "44.5k is inside our happy range. Asking for the renewal notice window instead of pushing price further.",
+      bias: "Anchoring: no longer a factor; this is budget math" },
+    seller: { move: "Accept $44,500 with 60-day notice",
+      thought: "44.5k clears my 44k happy line and the floor by 4.5k. Holding out for 46k would be loss aversion, not math. Accept.",
+      bias: "Loss aversion: overridden" },
+    mediator: { move: "Agreement drafted · signed by both",
+      thought: "$44,500 · Net 30 · 99.5% SLA · 12 months · 60-day renewal notice. Every red line on both sides is respected." }
+  }
+};
+
+function renderRound(r) {
+  const d = ROUNDS[r];
+  const card = (who, label, x) => `
+    <article class="thought ${who}">
+      <span class="pill ${who === 'mediator' ? '' : who}">${label}</span>
+      <p class="move">${x.move}</p>
+      <blockquote>${x.thought}</blockquote>
+      ${x.bias ? `<p class="bias">${x.bias}</p>` : ""}
+    </article>`;
+  document.getElementById("thoughts").innerHTML =
+    card("buyer", "Buyer thinks", d.buyer) + card("seller", "Seller thinks", d.seller) + card("mediator", "Mediator sees", d.mediator);
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.r === String(r))));
+  try { localStorage.setItem("deal-round", r); } catch (e) {}
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => renderRound(b.dataset.r)));
+let start = 3;
+try { start = localStorage.getItem("deal-round") || 3; } catch (e) {}
+renderRound(ROUNDS[start] ? start : 3);
+
+const NS = "http://www.w3.org/2000/svg";
+function el(svg, tag, attrs, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  svg.appendChild(n);
+  return n;
+}
+
+// Price map: 38k–52k
+(function () {
+  const svg = document.getElementById("zopa");
+  const L = 20, R = 540, x = v => L + (v - 38) / 14 * (R - L);
+  el(svg, "rect", { x: x(40), y: 30, width: x(50) - x(40), height: 34, fill: "var(--tile-2)", stroke: "var(--line)" });
+  el(svg, "rect", { x: x(44), y: 30, width: x(45) - x(44), height: 34, fill: "var(--zone)", stroke: "var(--blue)" });
+  el(svg, "line", { x1: L, x2: R, y1: 82, y2: 82, stroke: "var(--line)" });
+  for (let v = 38; v <= 52; v += 2) {
+    el(svg, "line", { x1: x(v), x2: x(v), y1: 82, y2: 87, stroke: "var(--line)" });
+    el(svg, "text", { x: x(v), y: 102, "text-anchor": "middle" }, v);
+  }
+  const marks = [
+    [40, "Seller floor", "var(--steel)", 22],
+    [42, "Buyer target", "var(--blue)", 22],
+    [46, "Seller target", "var(--steel)", 22],
+    [48, "Buyer BATNA", "var(--blue)", 22],
+    [50, "Buyer ceiling", "var(--blue)", 22],
+  ];
+  marks.forEach(([v, label, c, y]) => {
+    el(svg, "line", { x1: x(v), x2: x(v), y1: 26, y2: 68, stroke: c, "stroke-width": 2 });
+    el(svg, "text", { x: x(v), y: y - 6, "text-anchor": "middle", style: `fill:${c}` }, label);
+  });
+  el(svg, "text", { x: x(44.5), y: 118, "text-anchor": "middle", style: "fill:var(--blue);font-weight:700" }, "Overlap 44–45");
+})();
+
+// Offer track: rounds 1–3, $40k–$50k
+(function () {
+  const svg = document.getElementById("track");
+  const L = 48, R = 500, T = 14, B = 186;
+  const x = r => L + (r - 1) / 2 * (R - L - 20) + 10;
+  const y = v => B - (v - 40) / 10 * (B - T);
+  el(svg, "rect", { x: L, y: y(45), width: R - L, height: y(44) - y(45), fill: "var(--zone)" });
+  for (let v = 40; v <= 50; v += 2) {
+    el(svg, "line", { x1: L, x2: R, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-dasharray": "2 4" });
+    el(svg, "text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, "$" + v + "k");
+  }
+  [1, 2, 3].forEach(r => el(svg, "text", { x: x(r), y: 208, "text-anchor": "middle" }, "Round " + r));
+  const series = [
+    [[41, 43.5, 44.5], "var(--blue)"],
+    [[49, 46.5, 44.5], "var(--steel)"],
+  ];
+  series.forEach(([vals, c]) => {
+    el(svg, "polyline", { points: vals.map((v, i) => x(i + 1) + "," + y(v)).join(" "), fill: "none", stroke: c, "stroke-width": 2.5 });
+    vals.forEach((v, i) => {
+      el(svg, "circle", { cx: x(i + 1), cy: y(v), r: i === 2 ? 6 : 4, fill: c, stroke: "var(--tile)", "stroke-width": 2 });
+      if (i < 2) el(svg, "text", { x: x(i + 1) + 10, y: y(v) + 4, style: `fill:${c}` }, "$" + v + "k");
+    });
+  });
+  el(svg, "text", { x: x(3) - 10, y: y(44.5) - 12, "text-anchor": "end", style: "fill:var(--fg);font-weight:700" }, "Deal $44.5k");
+})();
+</script>

@@ -1,3 +1,33 @@
+# Agentic Negotiation
+
+A buyer agent and a seller agent negotiate a 12-month infrastructure contract, with a mediator agent between them. Each side has its own private folder of notes: its goals, red lines, fallback option and a cognitive bias (`kg-buyer/`, `kg-seller/`). Offers and terms go in a shared folder (`kg-shared/`). Every move is a git branch merged back to main, so `git log` replays the negotiation.
+
+Built on [Agentic Wiki Builder](https://github.com/ap0phasi/agentic-wiki-builder) by ap0phasi (MIT). The original README follows below.
+
+## Run
+
+```bash
+uv sync
+uv run negotiate.py --rounds 3 --runner claude   # or --runner opencode | local
+```
+
+- `--runner claude` calls `claude -p` pinned to `claude-haiku-5-5` with `.claude/negotiation-settings.json`. Its PreToolUse hook (`.claude/hooks/lane_check.sh`) stops each agent from reading or writing the other side's private folder. Run it from the repo root.
+- `--runner local` calls a model through OpenRouter (`src/runners/openrouter_runner.py`, needs `OPENROUTER_API_KEY`).
+- `scripts/setup_worktrees.sh` gives each agent its own git worktree, so the other side's private folder isn't there at all. Use it with runners that don't support hooks.
+
+## Layout
+
+| Path | What it holds |
+|---|---|
+| `kg-buyer/`, `kg-seller/` | Each side's private goals, biases and memory |
+| `kg-shared/` | Offers, signals, concerns, terms, and the final agreement or deadlock |
+| `schemas/` | Frontmatter templates for each note type |
+| `sessions/round-N-<role>/docs/` | Each agent's private reasoning for that round |
+| `src/agents/{buyer,seller,mediator}.py` | Agent prompts |
+| `negotiation-dashboard.html` | Static bento dashboard showing both sides. Its rounds are example data until a real run is wired in |
+
+---
+
 # Agentic Wiki Builder
 
 A tool that uses AI agents to build and maintain a wiki from raw data sources.
